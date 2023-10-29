@@ -8,10 +8,11 @@ public class PlayerMovement : MonoBehaviour
     private CharacterController controller;
     private Vector3 finalVelocity = Vector3.zero;
     private float velocityXZ = 5f;
-    private float acceleration = 7f;
+    private float acceleration = 8f;
     private float currentVelocity = 0f;
     private Vector3 dir;
     private Vector3 lastDir;
+    private bool isCrouched = false;
     //gravity
     [SerializeField] private float gravity;
     [SerializeField] private float jumpForce;
@@ -31,6 +32,12 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        //crouch
+        if (Input_Manager._INPUT_MANAGER.GetCrouchButtonPressed())
+        {
+            isCrouched = !isCrouched;
+        }
+
         //ground timer
         if (!controller.isGrounded) groundTimer = 0f;
         else groundTimer += Time.deltaTime;
@@ -41,12 +48,14 @@ public class PlayerMovement : MonoBehaviour
         if (Input_Manager._INPUT_MANAGER.ChangeInDirection()) lastDir = dir;
         dir = Quaternion.Euler(0f, camera.transform.eulerAngles.y, 0f) * new Vector3(Input_Manager._INPUT_MANAGER.GetLeftAxisValue().x, 0f, Input_Manager._INPUT_MANAGER.GetLeftAxisValue().y);
 
-        //velocity
+        //velocity and acceleration
         if (Input_Manager._INPUT_MANAGER.ChangeInDirection()) currentVelocity += acceleration * Time.deltaTime;
         else currentVelocity -= acceleration * Time.deltaTime;
 
-        currentVelocity = Mathf.Clamp(currentVelocity, 0f, velocityXZ);
+        if (isCrouched) currentVelocity = Mathf.Clamp(currentVelocity, 0f, velocityXZ * 0.5f);
+        else currentVelocity = Mathf.Clamp(currentVelocity, 0f, velocityXZ);
 
+        //apply velocity
         if (Input_Manager._INPUT_MANAGER.ChangeInDirection()) ApplyVelocity(dir);
         else ApplyVelocity(lastDir);    //apply velocity from last valid input, needed for deceleration
 
