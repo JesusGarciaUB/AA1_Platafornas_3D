@@ -12,6 +12,7 @@ public class Input_Manager : MonoBehaviour
     //Timers
     private float timeSinceJumpPressed = 0f;
     private float timeSinceCrouchPressed = 0f;
+    private float timeSinceCappyPressed = 0f;
 
     //Values
     private Vector2 leftAxisValue = Vector2.zero;
@@ -29,6 +30,7 @@ public class Input_Manager : MonoBehaviour
             playerInputs.Character.Move.performed += LeftAxisUpdate;
             playerInputs.Character.Crouch.performed += CrouchButtonPressed;
             playerInputs.Character.CameraMove.performed += RightAxisUpdate;
+            playerInputs.Character.Cappy.performed += CappyButtonPressed;
 
             _INPUT_MANAGER = this;
             DontDestroyOnLoad(gameObject);
@@ -40,8 +42,14 @@ public class Input_Manager : MonoBehaviour
         //Timers
         timeSinceJumpPressed += Time.deltaTime;
         timeSinceCrouchPressed += Time.deltaTime;
+        timeSinceCappyPressed += Time.deltaTime;
 
         InputSystem.Update();
+    }
+
+    private void CappyButtonPressed(InputAction.CallbackContext context)
+    {
+        timeSinceCappyPressed = 0f;
     }
 
     private void JumpButtonPressed(InputAction.CallbackContext context)
@@ -65,6 +73,10 @@ public class Input_Manager : MonoBehaviour
     }
 
     //Getters
+    public bool GetCappyPressed()
+    {
+        return this.timeSinceCappyPressed == 0f;
+    }
 
     public bool GetJumpButtonPressed()
     {

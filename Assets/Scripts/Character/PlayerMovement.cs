@@ -15,7 +15,9 @@ public class PlayerMovement : MonoBehaviour
     private bool isCrouched = false;
     //gravity
     [SerializeField] private float gravity;
-    [SerializeField] private float jumpForce;
+    [SerializeField] private float jumpForceBase;
+    [SerializeField] private float jumpForceMultiplier;
+    private float currentJumpForceMultiplier = 1f;
     [SerializeField] private float coyoteTime;  //set by user, max coyote time value
     [SerializeField] private float timeBetweenJumps; //max time between consecutive jumps
     private int currentJump;
@@ -23,6 +25,10 @@ public class PlayerMovement : MonoBehaviour
     private float groundTimer;                  //timer since ground
     //camera
     [SerializeField] Camera camera;
+    //cappy
+    [SerializeField] GameObject cappy;
+    private float forwardOffset = 1.4f;        //offset to prevent player clipping
+    private float spawnHeight = 0.6f;          //giving extra height to cappy spawnpoint
 
     private void Awake()
     {
@@ -32,6 +38,12 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        //cappy
+        if (Input_Manager._INPUT_MANAGER.GetCappyPressed())
+        {
+            SpawnCappy();
+        }
+
         //crouch
         if (Input_Manager._INPUT_MANAGER.GetCrouchButtonPressed())
         {
@@ -42,7 +54,11 @@ public class PlayerMovement : MonoBehaviour
         if (!controller.isGrounded) groundTimer = 0f;
         else groundTimer += Time.deltaTime;
 
-        if (groundTimer > timeBetweenJumps) currentJump = 0;
+        if (groundTimer > timeBetweenJumps)
+        {
+            currentJump = 0;
+            currentJumpForceMultiplier = 1f;
+        }
 
         //direction
         if (Input_Manager._INPUT_MANAGER.ChangeInDirection()) lastDir = dir;
@@ -59,7 +75,7 @@ public class PlayerMovement : MonoBehaviour
         if (Input_Manager._INPUT_MANAGER.ChangeInDirection()) ApplyVelocity(dir);
         else ApplyVelocity(lastDir);    //apply velocity from last valid input, needed for deceleration
 
-        //gravity
+        //gravity and jump
         dir.y = -1f;
         GravityBehaviour();
 
@@ -74,6 +90,9 @@ public class PlayerMovement : MonoBehaviour
         controller.Move(finalVelocity * Time.deltaTime);
     }
 
+    /// <summary>
+    /// Applies gravity and manages jump restrictions
+    /// </summary>
     private void GravityBehaviour()
     {
         if (controller.isGrounded)
@@ -102,23 +121,39 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Applies a jumpforce based on current consecutive jump
+    /// </summary>
     private void Jump()
     {
         switch(currentJump)
         {
             case 0:
-                finalVelocity.y = jumpForce;
+                finalVelocity.y = jumpForceBase;
                 currentJump++;
+                currentJumpForceMultiplier += jumpForceMultiplier;
                 break;
             case 1:
-                finalVelocity.y = jumpForce * 1.25f;
+                finalVelocity.y = jumpForceBase * currentJumpForceMultiplier;
                 currentJump++;
+                currentJumpForceMultiplier += jumpForceMultiplier;
                 break;
             case 2:
-                finalVelocity.y = jumpForce * 1.5f;
+                finalVelocity.y = jumpForceBase * currentJumpForceMultiplier;
                 currentJump = 0;
+                currentJumpForceMultiplier = 1f;
                 break;
         }
+    }
+
+    /// <summary>
+    /// We call this when we want to apply an upward force to our character from an outsider
+    /// </summary>
+    /// <param name="value"></param>
+    public void Jump(float value)
+    {
+        finalVelocity.y = value;
+        coyoteTimer = 0;
     }
 
     /// <summary>
@@ -129,5 +164,19 @@ public class PlayerMovement : MonoBehaviour
     {
         finalVelocity.x = value.x * currentVelocity;
         finalVelocity.z = value.z * currentVelocity;
+    }
+
+    /// <summary>
+    /// Spawns cappy and tells the level manager, if cappy is still on scene does nothing
+    /// </summary>
+    private void SpawnCappy()
+    {
+        if (!Level_Manager._LEVEL_MANAGER.getCappySituation())
+        {
+            Vector3 toSpawn = transform.position + transform.forward * forwardOffset;
+            toSpawn.y += spawnHeight;
+            Instantiate(cappy, toSpawn, transform.rotation);
+            Level_Manager._LEVEL_MANAGER.setCappySituation(true);
+        }
     }
 }
