@@ -16,11 +16,9 @@ public class PlayerMovement : MonoBehaviour
     //gravity
     [SerializeField] private float gravity;
     [SerializeField] private float jumpForceBase;
-    [SerializeField] private float jumpForceMultiplier;
-    private float currentJumpForceMultiplier = 1f;
     [SerializeField] private float coyoteTime;  //set by user, max coyote time value
     [SerializeField] private float timeBetweenJumps; //max time between consecutive jumps
-    private int currentJump;
+    private int currentJump = 0;
     private float coyoteTimer;                  //timer of coyote time
     private float groundTimer;                  //timer since ground
     private bool isGrounded;                    //raycasted isgrounded, much better than buggy isgrounded from character controller
@@ -69,11 +67,10 @@ public class PlayerMovement : MonoBehaviour
         {
             groundTimer += Time.deltaTime;
         }
-        Debug.Log(groundTimer);
+
         if (groundTimer > timeBetweenJumps)
         {
             currentJump = 0;
-            currentJumpForceMultiplier = 1f;
         }
 
         //direction
@@ -147,19 +144,23 @@ public class PlayerMovement : MonoBehaviour
         switch(currentJump)
         {
             case 0:
+                Debug.Log("jump1");
                 finalVelocity.y = jumpForceBase;
                 currentJump++;
-                currentJumpForceMultiplier += jumpForceMultiplier;
                 break;
             case 1:
-                finalVelocity.y = jumpForceBase * currentJumpForceMultiplier;
+                Debug.Log("jump2");
+                finalVelocity.y = jumpForceBase * 1.25f;
                 currentJump++;
-                currentJumpForceMultiplier += jumpForceMultiplier;
                 break;
             case 2:
-                finalVelocity.y = jumpForceBase * currentJumpForceMultiplier;
+                Debug.Log("jump3");
+                finalVelocity.y = jumpForceBase * 1.5f;
                 currentJump = 0;
-                currentJumpForceMultiplier = 1f;
+                break;
+            default:
+                Debug.Log("default");
+                finalVelocity.y = jumpForceBase;
                 break;
         }
     }
