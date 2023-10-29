@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Level_Manager : MonoBehaviour
 {
@@ -22,7 +23,8 @@ public class Level_Manager : MonoBehaviour
     {
         if (coinsInitialized && numberOfCoins == 0)
         {
-            Debug.Log("molt be");
+            Debug.Log("Has guanyat");
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
     }
 

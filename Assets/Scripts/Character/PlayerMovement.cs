@@ -13,6 +13,8 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 dir;
     private Vector3 lastDir;
     private bool isCrouched = false;
+    private bool isMoving = false;
+    private Vector3 lastPosition;
     //gravity
     [SerializeField] private float gravity;
     [SerializeField] private float jumpForceBase;
@@ -21,30 +23,29 @@ public class PlayerMovement : MonoBehaviour
     private int currentJump = 0;
     private float coyoteTimer;                  //timer of coyote time
     private float groundTimer;                  //timer since ground
-    private bool isGrounded;                    //raycasted isgrounded, much better than buggy isgrounded from character controller
+    private bool canLand = false;
     //camera
     [SerializeField] Camera camera;
     //cappy
     [SerializeField] GameObject cappy;
     private float forwardOffset = 1.4f;        //offset to prevent player clipping
     private float spawnHeight = 0.6f;          //giving extra height to cappy spawnpoint
+    //animator manager
+    Animator_Player_Manager anim;
 
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
+        anim = GetComponent<Animator_Player_Manager>();
         coyoteTimer = coyoteTime;
+        lastPosition = transform.position;
     }
 
     private void Update()
     {
-        //raycast for better ground control
-        RaycastHit hit;
-        Ray landingRay = new Ray(transform.position, Vector3.down);
-        if (Physics.Raycast(landingRay, out hit, 0.05f))
-        {
-            if (hit.collider == null) isGrounded = false;
-            else isGrounded = true;
-        }
+        //is moving or not?
+        isMoving = Input_Manager._INPUT_MANAGER.ChangeInDirection();
+        anim.setMove(isMoving);
 
         //cappy
         if (Input_Manager._INPUT_MANAGER.GetCappyPressed())
@@ -59,12 +60,17 @@ public class PlayerMovement : MonoBehaviour
         }
 
         //ground timer
-        if (!isGrounded)
+        if (!controller.isGrounded)
         {
             groundTimer = 0f;
         }
         else
         {
+            if (canLand && groundTimer >= 0.08f)
+            {
+                anim.setTriggerEndJump();
+                canLand = false;
+            }
             groundTimer += Time.deltaTime;
         }
 
@@ -109,7 +115,7 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     private void GravityBehaviour()
     {
-        if (isGrounded)
+        if (controller.isGrounded)
         {
             if (Input_Manager._INPUT_MANAGER.GetJumpButtonPressed())
             {
@@ -140,39 +146,37 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     private void Jump()
     {
-        isGrounded = false;
+        anim.setTriggerJump();
+        anim.setJumpPhase(currentJump);
         switch(currentJump)
         {
             case 0:
-                Debug.Log("jump1");
                 finalVelocity.y = jumpForceBase;
-                currentJump++;
+                currentJump = 1;
                 break;
             case 1:
-                Debug.Log("jump2");
                 finalVelocity.y = jumpForceBase * 1.25f;
-                currentJump++;
+                currentJump = 2;
                 break;
             case 2:
-                Debug.Log("jump3");
                 finalVelocity.y = jumpForceBase * 1.5f;
                 currentJump = 0;
                 break;
             default:
-                Debug.Log("default");
                 finalVelocity.y = jumpForceBase;
                 break;
         }
+        canLand = true;
     }
 
     /// <summary>
     /// We call this when we want to apply an upward force to our character from an outsider
     /// </summary>
     /// <param name="value"></param>
-    public void Jump(float value)
+    public void JumpSecond()
     {
-        finalVelocity.y = value;
-        coyoteTimer = 0;
+        currentJump = 2;
+        Jump();
     }
 
     /// <summary>
@@ -197,15 +201,5 @@ public class PlayerMovement : MonoBehaviour
             Instantiate(cappy, toSpawn, transform.rotation);
             Level_Manager._LEVEL_MANAGER.setCappySituation(true);
         }
-    }
-
-    public int GetCurrentJumpPhase()
-    {
-        return this.currentJump;
-    }
-
-    public bool GetIsGrounded()
-    {
-        return this.isGrounded;
     }
 }

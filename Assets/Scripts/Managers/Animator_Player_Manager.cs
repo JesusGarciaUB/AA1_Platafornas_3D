@@ -5,18 +5,29 @@ using UnityEngine;
 public class Animator_Player_Manager : MonoBehaviour
 {
     private Animator animator;
-    private PlayerMovement player;
 
     private void Awake()
     {
         animator = GetComponent<Animator>();
-        player = GetComponent<PlayerMovement>();
     }
 
-    private void Update()
+    public void setJumpPhase(int val)
     {
-        animator.SetBool("moving", Input_Manager._INPUT_MANAGER.ChangeInDirection());
-        animator.SetBool("jumping", player.GetIsGrounded());
-        animator.SetInteger("jumpPhase", player.GetCurrentJumpPhase());
+        animator.SetInteger("jumpPhase", val);
+    }
+
+    public void setMove(bool val)
+    {
+        animator.SetBool("moving", val);
+    }
+
+    public void setTriggerJump()
+    {
+        animator.SetTrigger("jump");
+    }
+
+    public void setTriggerEndJump()
+    {
+        animator.SetTrigger("endjump");
     }
 }
