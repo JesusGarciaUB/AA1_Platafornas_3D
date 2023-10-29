@@ -180,4 +180,9 @@ public class PlayerMovement : MonoBehaviour
             Level_Manager._LEVEL_MANAGER.setCappySituation(true);
         }
     }
+
+    public int GetCurrentJumpPhase()
+    {
+        return this.currentJump;
+    }
 }
