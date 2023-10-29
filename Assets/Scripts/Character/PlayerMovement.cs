@@ -23,6 +23,7 @@ public class PlayerMovement : MonoBehaviour
     private int currentJump;
     private float coyoteTimer;                  //timer of coyote time
     private float groundTimer;                  //timer since ground
+    private bool isGrounded;                    //raycasted isgrounded, much better than buggy isgrounded from character controller
     //camera
     [SerializeField] Camera camera;
     //cappy
@@ -38,6 +39,15 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        //raycast for better ground control
+        RaycastHit hit;
+        Ray landingRay = new Ray(transform.position, Vector3.down);
+        if (Physics.Raycast(landingRay, out hit, 0.05f))
+        {
+            if (hit.collider == null) isGrounded = false;
+            else isGrounded = true;
+        }
+
         //cappy
         if (Input_Manager._INPUT_MANAGER.GetCappyPressed())
         {
@@ -51,9 +61,15 @@ public class PlayerMovement : MonoBehaviour
         }
 
         //ground timer
-        if (!controller.isGrounded) groundTimer = 0f;
-        else groundTimer += Time.deltaTime;
-
+        if (!isGrounded)
+        {
+            groundTimer = 0f;
+        }
+        else
+        {
+            groundTimer += Time.deltaTime;
+        }
+        Debug.Log(groundTimer);
         if (groundTimer > timeBetweenJumps)
         {
             currentJump = 0;
@@ -96,7 +112,7 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     private void GravityBehaviour()
     {
-        if (controller.isGrounded)
+        if (isGrounded)
         {
             if (Input_Manager._INPUT_MANAGER.GetJumpButtonPressed())
             {
@@ -127,6 +143,7 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     private void Jump()
     {
+        isGrounded = false;
         switch(currentJump)
         {
             case 0:
@@ -184,5 +201,10 @@ public class PlayerMovement : MonoBehaviour
     public int GetCurrentJumpPhase()
     {
         return this.currentJump;
+    }
+
+    public bool GetIsGrounded()
+    {
+        return this.isGrounded;
     }
 }
