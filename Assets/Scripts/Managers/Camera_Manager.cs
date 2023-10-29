@@ -16,6 +16,11 @@ public class Camera_Manager : MonoBehaviour
         AxisValue.x = Mathf.Clamp(AxisValue.x, -10f, 50f);
 
         transform.eulerAngles = new Vector3(AxisValue.x, AxisValue.y, 0);
-        transform.position = Vector3.Lerp(transform.position, target.transform.position - transform.forward * distanceToTarget, cameraLerp * Time.deltaTime);
+        Vector3 finalPosition = Vector3.Lerp(transform.position, target.transform.position - transform.forward * distanceToTarget, cameraLerp * Time.deltaTime);
+
+        RaycastHit hit;
+        if (Physics.Linecast(target.transform.position, finalPosition, out hit) && hit.collider.tag != "Player") finalPosition = hit.point;
+
+        transform.position = finalPosition;
     }
 }

@@ -587,4 +587,5 @@ MonoBehaviour:
   gravity: 15
   jumpForce: 7
   coyoteTime: 1
+  timeBetweenJumps: 0.5
   camera: {fileID: 963194227}
