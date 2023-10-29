@@ -8,7 +8,10 @@ public class PlayerMovement : MonoBehaviour
     private CharacterController controller;
     private Vector3 finalVelocity = Vector3.zero;
     private float velocityXZ = 5f;
+    private float acceleration = 7f;
+    private float currentVelocity = 0f;
     private Vector3 dir;
+    private Vector3 lastDir;
     //gravity
     [SerializeField] private float gravity;
     [SerializeField] private float jumpForce;
@@ -35,11 +38,17 @@ public class PlayerMovement : MonoBehaviour
         if (groundTimer > timeBetweenJumps) currentJump = 0;
 
         //direction
+        if (Input_Manager._INPUT_MANAGER.ChangeInDirection()) lastDir = dir;
         dir = Quaternion.Euler(0f, camera.transform.eulerAngles.y, 0f) * new Vector3(Input_Manager._INPUT_MANAGER.GetLeftAxisValue().x, 0f, Input_Manager._INPUT_MANAGER.GetLeftAxisValue().y);
 
         //velocity
-        finalVelocity.x = dir.x * velocityXZ;
-        finalVelocity.z = dir.z * velocityXZ;
+        if (Input_Manager._INPUT_MANAGER.ChangeInDirection()) currentVelocity += acceleration * Time.deltaTime;
+        else currentVelocity -= acceleration * Time.deltaTime;
+
+        currentVelocity = Mathf.Clamp(currentVelocity, 0f, velocityXZ);
+
+        if (Input_Manager._INPUT_MANAGER.ChangeInDirection()) ApplyVelocity(dir);
+        else ApplyVelocity(lastDir);    //apply velocity from last valid input, needed for deceleration
 
         //gravity
         dir.y = -1f;
@@ -101,5 +110,15 @@ public class PlayerMovement : MonoBehaviour
                 currentJump = 0;
                 break;
         }
+    }
+
+    /// <summary>
+    /// Applies a velocity given a direction
+    /// </summary>
+    /// <param name="dir"></param>
+    private void ApplyVelocity(Vector3 value)
+    {
+        finalVelocity.x = value.x * currentVelocity;
+        finalVelocity.z = value.z * currentVelocity;
     }
 }
