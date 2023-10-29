@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -43,6 +44,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        //fall off the map
+        if (transform.position.y <= -1f) SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         //is moving or not?
         isMoving = Input_Manager._INPUT_MANAGER.ChangeInDirection();
         anim.setMove(isMoving);
