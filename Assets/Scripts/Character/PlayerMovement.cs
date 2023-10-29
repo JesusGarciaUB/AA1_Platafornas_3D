@@ -63,6 +63,7 @@ public class PlayerMovement : MonoBehaviour
         //direction
         if (Input_Manager._INPUT_MANAGER.ChangeInDirection()) lastDir = dir;
         dir = Quaternion.Euler(0f, camera.transform.eulerAngles.y, 0f) * new Vector3(Input_Manager._INPUT_MANAGER.GetLeftAxisValue().x, 0f, Input_Manager._INPUT_MANAGER.GetLeftAxisValue().y);
+        dir.Normalize();
 
         //velocity and acceleration
         if (Input_Manager._INPUT_MANAGER.ChangeInDirection()) currentVelocity += acceleration * Time.deltaTime;

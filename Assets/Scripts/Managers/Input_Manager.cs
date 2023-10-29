@@ -20,6 +20,7 @@ public class Input_Manager : MonoBehaviour
 
     private void Awake()
     {
+        Cursor.visible = false;
         if (_INPUT_MANAGER != null && _INPUT_MANAGER != this) Destroy(gameObject);
         else
         {

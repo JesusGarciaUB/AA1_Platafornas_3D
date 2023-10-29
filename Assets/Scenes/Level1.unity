@@ -369,7 +369,7 @@ MonoBehaviour:
   distanceToTarget: 7
   target: {fileID: 2113996585}
   cameraLerp: 90
-  useRaycast: 0
+  useRaycast: 1
 --- !u!1 &1312312951
 GameObject:
   m_ObjectHideFlags: 0
